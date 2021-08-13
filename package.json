@@ -1,6 +1,6 @@
 {
-  "name": "@wowserhq/stormjs",
-  "version": "0.4.1",
+  "name": "@ldcv/stormjs",
+  "version": "0.5.2",
   "description": "StormLib for Javascript, powered by Emscripten",
   "main": "dist/index",
   "module": "dist/index.mjs",
@@ -21,11 +21,14 @@
     "build:esm": "set BABEL_ENV=esm && babel src/lib/ --out-dir dist/ --keep-file-extension",
     "clean": "node scripts/clean.js",
     "lint": "eslint . --ext js,mjs",
-    "prepublishOnly": "npm run lint && npm run clean && npm run build && npm run test",
+    "prepublishOnly": "echo \"npm run lint && npm run clean && npm run build && npm run test\"",
     "release": "standard-version",
     "test": "jest"
   },
-  "repository": "github:wowserhq/stormjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ldconval/stormjs.git"
+  },
   "keywords": [
     "mpq",
     "stormlib",
@@ -53,5 +56,9 @@
     "lint-staged": "10.2.6",
     "standard-version": "8.0.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "bugs": {
+    "url": "https://github.com/ldconval/stormjs/issues"
+  },
+  "homepage": "https://github.com/ldconval/stormjs#readme"
 }

@@ -47,7 +47,7 @@ async function checkEnvironment() {
   }
 
   if (!await checkCommand('make')) {
-    missing.push('make');
+    // missing.push('make');
   }
 
   if (!await checkCommand('emcmake')) {
@@ -55,7 +55,7 @@ async function checkEnvironment() {
   }
 
   if (!await checkCommand('emmake')) {
-    missing.push('emmake');
+    // missing.push('emmake');
   }
 
   if (!await checkCommand('emcc')) {
@@ -109,8 +109,8 @@ async function buildDebug(buildRoot, distDir) {
 
   const { makeOut, makeErr } = await emmake(makeTarget);
 
-// emcmake cmake -G Ninja StormLib
-// cmake --build .
+  // emcmake cmake -G Ninja StormLib
+  // cmake --build .
   const sharedCompileFlags = [
     '-O0',
     '-g2',
