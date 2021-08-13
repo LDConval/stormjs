@@ -53,6 +53,10 @@ class EmBuf {
       return size;
     }
 
+    uint32_t getPtr() {
+      return (uint32_t)ptr;
+    }
+
     val toJS() {
       return val(typed_memory_view(size, ptr));
     }
@@ -74,6 +78,10 @@ class EmStr {
 
     uint32_t getSize() const {
       return size;
+    }
+
+    uint32_t getPtr() {
+      return (uint32_t)ptr;
     }
 
     val toJS() {
@@ -155,15 +163,136 @@ bool EmSFileReadFile(EmPtr& pFile, EmBuf& bData, uint32_t uToRead, EmPtr& pRead,
   return SFileReadFile(pFile.ptr, bData.ptr, uToRead, static_cast<uint32_t*>(pRead.ptr), static_cast<uint32_t*>(pOverlapped.ptr));
 }
 
+bool EmSFileFlushArchive(EmPtr& pMpq) {
+  return SFileFlushArchive(pMpq.ptr);
+}
+
+bool EmSFileCompactArchive(EmPtr& pMpq, const std::string& szListFile, uint32_t bReserved) {
+  if(szListFile.length() == 0) {
+    return SFileCompactArchive(pMpq.ptr, nullptr, (bool)0);
+  }
+  else {
+    return SFileCompactArchive(pMpq.ptr, szListFile.c_str(), (bool)0);
+  }
+}
+
+bool EmSFileSignArchive(EmPtr& pMpq, uint32_t dwSignatureType) {
+  return SFileSignArchive(pMpq.ptr, dwSignatureType);
+}
+
+bool EmSFileWriteFileFromFS(EmPtr& pFile, const std::string& sWrittenFilePath, uint32_t dwSize, uint32_t dwCompression) {
+  FILE *fptr;
+  char *buffer;
+  bool result;
+
+  buffer = (char *)malloc(dwSize+1);
+  fptr = fopen(sWrittenFilePath.c_str(), "rb");
+  fread(buffer, dwSize, 1, fptr);
+  fclose(fptr);
+  result = SFileWriteFile(pFile.ptr, buffer, dwSize, dwCompression);
+  free(buffer);
+  return result;
+}
+
+bool EmSFileWriteFile(EmPtr& pFile, EmBuf& bData, uint32_t dwSize, uint32_t dwCompression) {
+  return SFileWriteFile(pFile.ptr, bData.ptr, dwSize, dwCompression);
+}
+
+bool EmSFileFinishFile(EmPtr& pFile) {
+  return SFileFinishFile(pFile.ptr);
+}
+
+bool EmSFileRemoveFile(EmPtr& hMpq, const std::string& szFileName, uint32_t dwSearchScope) {
+  return SFileRemoveFile(hMpq.ptr, szFileName.c_str(), dwSearchScope);
+}
+
+bool EmSFileRenameFile(EmPtr& hMpq, const std::string& szOldFileName, const std::string& szNewFileName) {
+  return SFileRenameFile(hMpq.ptr, szOldFileName.c_str(), szNewFileName.c_str());
+}
+
+bool EmSFileExtractFile(EmPtr& hMpq, const std::string& szToExtract, const std::string& szExtracted, uint32_t dwSearchScope) {
+  return SFileExtractFile(hMpq.ptr, szToExtract.c_str(), szExtracted.c_str(), dwSearchScope);
+}
+
+uint32_t EmSFileVerifyFile(EmPtr& hMpq, const std::string& szFileName, uint32_t dwFlags) {
+  return SFileVerifyFile(hMpq.ptr, szFileName.c_str(), dwFlags);
+}
+
+uint32_t EmSFileVerifyArchive(EmPtr& hMpq) {
+  return SFileVerifyArchive(hMpq.ptr);
+}
+
+bool EmSFileIsPatchedArchive(EmPtr& hMpq) {
+  return SFileIsPatchedArchive(hMpq.ptr);
+}
+
+bool EmSFileCreateArchive(const std::string& sMpqName, uint32_t dwCreateFlags, uint32_t dwMaxFileCount, EmPtr& hMpq) {
+  return SFileCreateArchive(sMpqName.c_str(), dwCreateFlags, dwMaxFileCount, &hMpq.ptr);
+}
+
+bool EmSFileSetMaxFileCount(EmPtr& hMpq, uint32_t dwMaxFileCount) {
+  return SFileSetMaxFileCount(hMpq.ptr, dwMaxFileCount);
+}
+
+bool EmSFileSetFileLocale(EmPtr& hFile, uint32_t lcid) {
+  return SFileSetFileLocale(hFile.ptr, lcid);
+}
+
+bool EmSFileCreateFile(EmPtr& hMpq, const std::string& szArchivedName, double fileTime, uint32_t fileSize, uint32_t lcid, uint32_t dwFlags, EmPtr& pFile) {
+  return SFileCreateFile(hMpq.ptr, szArchivedName.c_str(), (uint64_t)fileTime, fileSize, lcid, dwFlags, &pFile.ptr);
+}
+
+bool EmSFileAddFileEx(EmPtr& hMpq, const std::string& szFileName, const std::string& szArchivedName, uint32_t dwFlags, uint32_t dwCompression, uint32_t dwCompressionNext) {
+  return SFileAddFileEx(hMpq.ptr, szFileName.c_str(), szArchivedName.c_str(), dwFlags, dwCompression, dwCompressionNext);
+}
+
 uint32_t EmSFileSetFilePointer(EmPtr& pFile, uint32_t uPos, EmPtr& pPosHigh, uint32_t uMoveMethod) {
   return SFileSetFilePointer(pFile.ptr, uPos, static_cast<int32_t*>(pPosHigh.ptr), uMoveMethod);
+}
+
+uint32_t EmSFileAddListFile(EmPtr& hMpq, const std::string& szListFile) {
+  return SFileAddListFile(hMpq.ptr, szListFile.c_str());
+}
+
+uint32_t EmSFileEnumLocales(EmPtr& hMpq, const std::string& szFileName, EmPtr& plcLocales, EmPtr& pdwMaxLocales, uint32_t dwSearchScope) {
+  return SFileEnumLocales(hMpq.ptr, szFileName.c_str(), static_cast<uint32_t*>(plcLocales.ptr), static_cast<uint32_t*>(pdwMaxLocales.ptr), dwSearchScope);
+}
+
+uint32_t EmSFileSetLocale(uint32_t lcid) {
+  return SFileSetLocale(lcid);
+}
+
+uint32_t EmSFileGetLocale() {
+  return SFileGetLocale();
+}
+
+bool EmSFileCreateArchive2(const std::string& sMpqName, val vCreateInfo, EmPtr& hMpq) {
+  SFILE_CREATE_MPQ * pCreateInfo = new SFILE_CREATE_MPQ;
+  pCreateInfo -> cbSize = (uint32_t)sizeof(SFILE_CREATE_MPQ);
+  pCreateInfo -> dwMpqVersion = vCreateInfo["dwMpqVersion"].as<uint32_t>();
+  pCreateInfo -> pvUserData = nullptr;
+  pCreateInfo -> cbUserData = 0;
+  pCreateInfo -> dwStreamFlags = vCreateInfo["dwStreamFlags"].as<uint32_t>();
+  pCreateInfo -> dwFileFlags1 = vCreateInfo["dwFileFlags1"].as<uint32_t>();
+  pCreateInfo -> dwFileFlags2 = vCreateInfo["dwFileFlags2"].as<uint32_t>();
+  pCreateInfo -> dwFileFlags3 = vCreateInfo["dwFileFlags3"].as<uint32_t>();
+  pCreateInfo -> dwAttrFlags = vCreateInfo["dwAttrFlags"].as<uint32_t>();
+  pCreateInfo -> dwSectorSize = vCreateInfo["dwSectorSize"].as<uint32_t>();
+  pCreateInfo -> dwRawChunkSize = vCreateInfo["dwRawChunkSize"].as<uint32_t>();
+  pCreateInfo -> dwMaxFileCount = vCreateInfo["dwMaxFileCount"].as<uint32_t>();
+  return SFileCreateArchive2(sMpqName.c_str(), pCreateInfo, &hMpq.ptr);
+}
+
+bool EmSFileGetFileInfo(EmPtr& hMpq, uint32_t InfoClass, EmBuf& pvFileInfo, uint32_t cbFileInfo, EmPtr& pcbLengthNeeded) {
+  return SFileGetFileInfo(hMpq.ptr, (SFileInfoClass)InfoClass, pvFileInfo.ptr, cbFileInfo, static_cast<uint32_t*>(pcbLengthNeeded.ptr));
 }
 
 EMSCRIPTEN_BINDINGS(EmStormLib) {
   class_<EmBuf>("Buf")
     .constructor<uint32_t>()
     .function("getSize", &EmBuf::getSize)
-    .function("toJS", &EmBuf::toJS);
+    .function("toJS", &EmBuf::toJS)
+    .function("getPtr", &EmBuf::getPtr);
 
   class_<EmPtr>("Ptr")
     .constructor()
@@ -173,7 +302,8 @@ EMSCRIPTEN_BINDINGS(EmStormLib) {
   class_<EmStr>("Str")
     .constructor<uint32_t>()
     .function("getSize", &EmStr::getSize)
-    .function("toJS", &EmStr::toJS);
+    .function("toJS", &EmStr::toJS)
+    .function("getPtr", &EmStr::getPtr);
 
   class_<EmVoidPtr, base<EmPtr>>("VoidPtr")
     .constructor();
@@ -209,12 +339,37 @@ EMSCRIPTEN_BINDINGS(EmStormLib) {
   function("SFileOpenPatchArchive", &EmSFileOpenPatchArchive);
   function("SFileOpenFileEx", &EmSFileOpenFileEx);
   function("SFileReadFile", &EmSFileReadFile);
+  function("SFileRemoveFile", &EmSFileRemoveFile);
+  function("SFileRenameFile", &EmSFileRenameFile);
+  function("SFileExtractFile", &EmSFileExtractFile);
+  function("SFileSetFileLocale", &EmSFileSetFileLocale);
+  function("SFileVerifyFile", &EmSFileVerifyFile);
+  function("SFileAddFileEx", &EmSFileAddFileEx);
+  function("SFileCreateFile", &EmSFileCreateFile);
   function("SFileSetFilePointer", &EmSFileSetFilePointer);
+  function("SFileWriteFile", &EmSFileWriteFile);
+  function("SFileFinishFile", &EmSFileFinishFile);
+  function("SFileFlushArchive", &EmSFileFlushArchive);
+  function("SFileCompactArchive", &EmSFileCompactArchive);
+  function("SFileSignArchive", &EmSFileSignArchive);
+  function("SFileVerifyArchive", &EmSFileVerifyArchive);
+  function("SFileSetMaxFileCount", &EmSFileSetMaxFileCount);
+  function("SFileCreateArchive", &EmSFileCreateArchive);
+  function("SFileCreateArchive2", &EmSFileCreateArchive2);
+  function("SFileAddListFile", &EmSFileAddListFile);
+  function("SFileEnumLocales", &EmSFileEnumLocales);
+  function("SFileSetLocale", &EmSFileSetLocale);
+  function("SFileGetLocale", &EmSFileGetLocale);
+  function("SFileIsPatchedArchive", &EmSFileIsPatchedArchive);
+  function("SFileGetFileInfo", &EmSFileGetFileInfo);
 
   constant("ERROR_FILE_NOT_FOUND", ERROR_FILE_NOT_FOUND);
   constant("ERROR_NO_MORE_FILES", ERROR_NO_MORE_FILES);
+  constant("ERROR_INSUFFICIENT_BUFFER", ERROR_INSUFFICIENT_BUFFER);
   constant("FILE_BEGIN", FILE_BEGIN);
   constant("MAX_PATH", MAX_PATH);
   constant("SFILE_INVALID_SIZE", SFILE_INVALID_SIZE);
   constant("STREAM_FLAG_READ_ONLY", STREAM_FLAG_READ_ONLY);
+  constant("HASH_TABLE_SIZE_MIN", HASH_TABLE_SIZE_MIN);
+  constant("HASH_TABLE_SIZE_MAX", HASH_TABLE_SIZE_MAX);
 }

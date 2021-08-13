@@ -7,5 +7,6 @@ const FS = StormLib.FS;
 export {
   File,
   FS,
-  MPQ
+  MPQ,
+  StormLib
 };

@@ -1,5 +1,6 @@
 import FileStream from './stream.mjs';
 import StormLib from '../stormlib.js';
+import {LCIDToC, LCIDToJS} from '../lcid/index.mjs';
 
 class File {
   constructor(handle) {
@@ -110,11 +111,102 @@ class File {
     }
   }
 
+  setLocale(lcid) {
+    this._ensureHandle();
+    let lcidC = LCIDToC(lcid);
+    if (StormLib.SFileSetFileLocale(this.handle, lcidC)) {
+      return this;
+    } else {
+      const errno = StormLib.GetLastError();
+      throw new Error(`Could not set file locale (error ${errno})`);
+    }
+  }
+
+  _processInfoBuf(buf, len, classC) {
+    const infoClassTypes = File.infoClassTypes;
+    const infoType = infoClassTypes[classC];
+    let bufAB = buf.toJS().slice(0, len);
+    if(infoType == "i64") {
+      return Array.from(new Uint32Array(bufAB.buffer));
+    }
+    else if(infoType == "i32" || infoType == "p") {
+      return new Uint32Array(bufAB.buffer)[0];
+    }
+    else if(infoType == "lc") {
+      return LCIDToJS(new Uint32Array(bufAB.buffer)[0]);
+    }
+    else {
+      return bufAB;
+    }
+  }
+
+  _getInfo(infoClass, bufSize) {
+    this._ensureHandle();
+    const infoClasses = File.infoClasses;
+    const size = bufSize || 12;
+    let buf = new StormLib.Buf(size);
+    let lenNeeded = new StormLib.Uint32Ptr();
+    let infoClassC = typeof(infoClass) == "number" ? infoClass : infoClasses[infoClass];
+    
+    if(StormLib.SFileGetFileInfo(this.handle, infoClassC, buf, size, lenNeeded)) {
+      let lenReturned = lenNeeded.toJS();
+      lenNeeded.delete();
+      return this._processInfoBuf(buf, lenReturned, infoClassC);
+    }
+    else {
+      const errno = StormLib.GetLastError();
+      if(errno != StormLib.ERROR_INSUFFICIENT_BUFFER || bufSize > 0) {
+        throw new Error(`Failed to get file info (error ${errno})`);
+      }
+      else {
+        let lenNextCall = lenNeeded.toJS();
+        lenNeeded.delete();
+        return this._getInfo(infoClass, lenNextCall + 4);
+      }
+    }
+  }
+
+  getInfo(infoClass) {
+    return this._getInfo(infoClass, 0);
+  }
+
   _ensureHandle() {
     if (!this.handle) {
       throw new Error('Invalid handle');
     }
   }
 }
+
+File.infoClasses = {
+  "patchChain" : 40,
+  "fileEntry" : 41,
+  "hashEntry" : 42,
+  "hashIndex" : 43,
+  "nameHash1" : 44,
+  "nameHash2" : 45,
+  "nameHash3" : 46,
+  "locale" : 47,
+  "fileIndex" : 48,
+  "byteOffset" : 49,
+  "fileTime" : 50,
+  "fileSize" : 51,
+  "compressedSize" : 52,
+  "flags" : 53,
+  "encryptionKey" : 54,
+  "encryptionKeyRaw" : 55,
+  "crc32" : 56,
+};
+
+File.infoClassTypes = [
+  "s", "b", "i64", "b", "b", "i64", "i32", "b",
+  "i64", "i64", "b", "p", "i64", "i64", "b", "p",
+  "i64", "i64", "i32", "b", "i64", "i64", "i32", "b", 
+  "i64", "i64", "b", "i32", "i64", "i32", "b", "i64",
+  "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", 
+  // start here (40)
+  "b", "b", "b", "i32", "i32", "i32", "i64", "lc",
+  "i32", "i64", "i64", "i32", "i32", "i32", "i32", "i32",
+  "i32",
+];
 
 export default File;

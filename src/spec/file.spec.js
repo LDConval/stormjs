@@ -440,5 +440,43 @@ describe('File', () => {
       file.close();
       mpq.close();
     });
+
+    test('set file locales', async () => {
+      const mpq = await MPQ.open('/fixture/vanilla-standard.mpq');
+      const file = mpq.openFile('fixture.txt');
+
+      file.setLocale("ja_JP");
+      expect(file.getInfo("locale")).toEqual("ja_JP");
+      file.setLocale(1042);
+      expect(file.getInfo("locale")).toEqual("ko_KR");
+      file.setLocale(0);
+      expect(file.getInfo("locale")).toEqual("Neutral");
+
+      const originalHandle = file.handle;
+      const invalidHandle = new StormLib.VoidPtr();
+
+      expect(() => file.setLocale(0)).toThrow(Error);
+
+      invalidHandle.delete();
+      file.handle = originalHandle;
+
+      file.close();
+      mpq.close();
+    });
+
+    test('file info', async () => {
+      const mpq = await MPQ.open('/fixture/vanilla-standard.mpq');
+      const file = mpq.openFile('fixture.txt');
+
+      expect(file.getInfo("fileSize")).toEqual(13);
+      expect(file.getInfo("byteOffset")).toEqual([32, 0]);
+      expect(file.getInfo("patchChain")).toBeInstanceOf(Uint8Array);
+      expect(file.getInfo("fileEntry")).toBeInstanceOf(Uint8Array);
+      expect(() => file.getInfo("userData")).toThrow(Error);
+      expect(() => file.getInfo(100)).toThrow(Error);
+
+      file.close();
+      mpq.close();
+    });
   });
 });

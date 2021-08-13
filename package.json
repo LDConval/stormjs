@@ -12,10 +12,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm run build:stormlib && npm run build:cjs && npm run build:esm",
+    "build": "npm run build:stormlib && npm run build:babel",
+    "build:js": "npm run build:babel",
     "build:stormlib": "node scripts/build-stormlib.js",
-    "build:cjs": "BABEL_ENV=cjs babel src/lib/ --out-dir dist/",
-    "build:esm": "BABEL_ENV=esm babel src/lib/ --out-dir dist/ --keep-file-extension",
+    "build:babel": "scripts\\build_babel.bat",
+    "build:browserify": "browserify -o dist/bundle.js scripts/packme.js",
+    "build:cjs": "set BABEL_ENV=cjs && babel src/lib/ --out-dir dist/",
+    "build:esm": "set BABEL_ENV=esm && babel src/lib/ --out-dir dist/ --keep-file-extension",
     "clean": "node scripts/clean.js",
     "lint": "eslint . --ext js,mjs",
     "prepublishOnly": "npm run lint && npm run clean && npm run build && npm run test",
@@ -49,5 +52,6 @@
     "jest": "26.0.1",
     "lint-staged": "10.2.6",
     "standard-version": "8.0.0"
-  }
+  },
+  "dependencies": {}
 }

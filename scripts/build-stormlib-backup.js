@@ -159,14 +159,6 @@ async function buildDebug(buildRoot, distDir) {
   await fs.mkdirp(distDir);
 
   await fs.copy(`${buildRoot}/stormlib.debug.js`, `${distDir}/stormlib.debug.js`);
-
-  console.info('Fixing return statement');
-
-  let fileData = fs.readFileSync(`${distDir}/stormlib.debug.js`, {encoding: "utf8"});
-
-  fileData = fileData.replace("  return StormLib.ready", "  return StormLib;");
-
-  fs.writeFileSync(`${distDir}/stormlib.debug.js`, fileData, {encoding: "utf8"});
 }
 
 async function buildRelease(buildRoot, distDir) {
@@ -192,7 +184,7 @@ async function buildRelease(buildRoot, distDir) {
   const { makeOut, makeErr } = await emmake(makeTarget);
 
   const sharedCompileFlags = [
-    '-O3',
+    '-O1',
     '--llvm-opts "[\'-O3\']"'
   ];
 
@@ -237,14 +229,6 @@ async function buildRelease(buildRoot, distDir) {
   await fs.mkdirp(distDir);
 
   await fs.copy(`${buildRoot}/stormlib.release.js`, `${distDir}/stormlib.release.js`);
-
-  console.info('Fixing return statement');
-
-  let fileData = fs.readFileSync(`${distDir}/stormlib.release.js`, {encoding: "utf8"});
-
-  fileData = fileData.replace("  return StormLib.ready", "  return StormLib;");
-
-  fs.writeFileSync(`${distDir}/stormlib.release.js`, fileData, {encoding: "utf8"});
 }
 
 async function emcmake(flags = [], path = '.') {
