@@ -18,20 +18,44 @@ See `src/vendor/StormLib/LICENSE` for more information.
 To install StormJS:
 
 ```sh
-npm install @wowserhq/stormjs
+npm install @ldcv/stormjs
 ```
 
 To use StormJS in an ES2015 module environment:
 
 ```js
-import { FS, MPQ } from '@wowserhq/stormjs';
+import { FS, MPQ } from '@ldcv/stormjs';
 
-// Mount the local filesystem path /home/wowserhq/example as /stormjs
+// Mount the local filesystem path /home/stormjs/example as /stormjs
 // This approach is suitable for cases where StormJS is running under Node
 FS.mkdir('/stormjs');
-FS.mount(FS.filesystems.NODEFS, { root: '/home/wowserhq/example' }, '/stormjs');
+FS.mount(FS.filesystems.NODEFS, { root: '/home/stormjs/example' }, '/stormjs');
 
 const mpq = await MPQ.open('/stormjs/example.mpq', 'r');
+const file = mpq.openFile('example.txt');
+const data = file.read();
+
+// Clean up
+file.close();
+mpq.close();
+```
+
+To use StormJS in browser:
+
+```js
+const { MPQ } = require('@ldcv/stormjs');
+
+// Fetch MPQ file from the server
+const mpqBuffer = await fetch("path/to/your.mpq").then(res => res.arrayBuffer());
+
+// Read uploaded MPQ file from file input
+const fileReader = new FileReader();
+const mpqBufferInput = await new Promise(resolve => {
+    fileReader.onload = evt => resolve(evt.target.result);
+    fileReader.readAsArrayBuffer( document.querySelector("input[type='file']").files[0] );
+});
+
+const mpq = await MPQ.fromArrayBuffer(mpqBuffer);
 const file = base.openFile('example.txt');
 const data = file.read();
 
@@ -40,13 +64,19 @@ file.close();
 mpq.close();
 ```
 
-Note that StormJS loads in production mode if `NODE_ENV` is set to `production`. In all other cases, StormJS loads in debug mode.
+Then pack the script using a packaging tool, such as Browserify:
+
+```bash
+browserify -o bundle.js your-script.js
+```
+
+Note that StormJS loads in production mode if `process.env.NODE_ENV` is set to `production`. In all other cases, StormJS loads in debug mode.
 
 ## Compatibility
 
-StormJS is tested against Node 10, 12, and 14.
+StormJS is tested against Node 10, 12, and 14; also tested in Chrome 92.
 
-Additionally, StormJS should work well in browsers with support for WASM. Note that use in browsers will require configuring an Emscripten filesystem type appropriate for the browser.
+Additionally, StormJS should work well in other browsers with support for WASM. Note that use in browsers will require configuring an Emscripten filesystem type appropriate for the browser.
 
 ## Development
 
