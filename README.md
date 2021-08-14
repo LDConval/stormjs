@@ -72,6 +72,12 @@ browserify -o bundle.js your-script.js
 
 Note that StormJS loads in production mode if `process.env.NODE_ENV` is set to `production`. In all other cases, StormJS loads in debug mode.
 
+For production mode in browsers, you may exclude the debug library `--exclude node_modules/@ldcv/stormjs/dist/stormlib.debug.js` from the packaging tool to reduce bundled script size.
+
+## API Reference
+
+Please refer to [API.md](https://github.com/LDConval/stormjs/blob/master/API.md).
+
 ## Compatibility
 
 StormJS is tested against Node 10, 12, and 14; also tested in Chrome 92.
