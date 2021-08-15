@@ -191,7 +191,7 @@ describe('MPQ', () => {
         compSize: 21,
         fileTimeLo: 414638976,
         fileTimeHi: 30643794,
-        locale: "Neutral"
+        locale: 0
       });
 
       mpq.close();

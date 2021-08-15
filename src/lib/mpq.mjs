@@ -96,10 +96,7 @@ class MPQ {
     findData.delete();
     findHandle.delete();
 
-    return results.map(obj => {
-      obj.locale = LCIDToJS(obj.locale);
-      return obj;
-    });
+    return results;
   }
 
   compact(listfile = "") {

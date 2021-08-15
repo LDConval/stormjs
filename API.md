@@ -139,7 +139,7 @@ Searches for a list of files in the MPQ from a given mask.
   - compSize: number; compressed file size
   - fileTimeLo: number; low 32 bits of file time
   - fileTimeHi: number; high 32 bits of file time
-  - locale: string; locale ID
+  - locale: number; locale ID
 
 #### mpq.addFile( fileNameInFS, [ fileNameInMpq, flags ] )
 
