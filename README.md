@@ -56,7 +56,7 @@ const mpqBufferInput = await new Promise(resolve => {
 });
 
 const mpq = await MPQ.fromArrayBuffer(mpqBuffer);
-const file = base.openFile('example.txt');
+const file = mpq.openFile('example.txt');
 const data = file.read();
 
 // Clean up

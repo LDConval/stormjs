@@ -58,6 +58,9 @@ class MPQ {
       const errno = StormLib.GetLastError();
       throw new Error(`Patch failed (error ${errno})`);
     }
+    else {
+      return this;
+    }
   }
 
   search(mask, listfile = '') {
@@ -93,7 +96,10 @@ class MPQ {
     findData.delete();
     findHandle.delete();
 
-    return results;
+    return results.map(obj => {
+      obj.locale = LCIDToJS(obj.locale);
+      return obj;
+    });
   }
 
   compact(listfile = "") {
@@ -245,7 +251,7 @@ class MPQ {
       return arg;
     }
     else if(typeof(arg) == 'undefined') {
-      return 0x80000200;
+      return 0x80010200;
     }
     else {
       return ((arg.implode     ? 0x00000100 : 0)
@@ -257,6 +263,21 @@ class MPQ {
             | (arg.deleted     ? 0x02000000 : 0)
             | (arg.sectorCRC   ? 0x04000000 : 0))
             + (arg.replace     ? 0x80000000 : 0); // because it will give a negative value otherwise
+    }
+  }
+
+  _attributeFlags(arg) {
+    if(typeof(arg) == 'number') {
+      return arg;
+    }
+    else if(typeof(arg) == 'undefined') {
+      return 0;
+    }
+    else {
+      return (arg.crc32    ? 0x1 : 0)
+           | (arg.time     ? 0x2 : 0)
+           | (arg.md5      ? 0x4 : 0)
+           | (arg.patchBit ? 0x8 : 0);
     }
   }
 
@@ -357,7 +378,7 @@ class MPQ {
     let buf = new StormLib.Buf(size);
     let lenNeeded = new StormLib.Uint32Ptr();
     let infoClassC = typeof(infoClass) == "number" ? infoClass : infoClasses[infoClass];
-    
+
     if(StormLib.SFileGetFileInfo(this.handle, infoClassC, buf, size, lenNeeded)) {
       let lenReturned = lenNeeded.toJS();
       lenNeeded.delete();
@@ -483,7 +504,7 @@ class MPQ {
     }
   }
 
-  static async create(path, createOptionsOrFlags, maxFiles = 4000) {
+  static async create(path, createOptionsOrFlags, maxFiles = 1000) {
     await StormLib.ready;
 
     const handle = new StormLib.VoidPtr();
@@ -505,13 +526,13 @@ class MPQ {
         "cbSize"         : opt.headerSize ?? 0,
         "dwMpqVersion"   : (opt.version ?? 1) - 1,
         "dwStreamFlags"  : opt.streamFlags ?? 0,
-        "dwFileFlags1"   : opt.fileFlagsListfile ?? 1,
-        "dwFileFlags2"   : opt.fileFlagsAttributes ?? 1,
-        "dwFileFlags3"   : opt.fileFlagsSignature ?? 0,
-        "dwAttrFlags"    : opt.attributeFlags ?? 0,
+        "dwFileFlags1"   : this.prototype._addFileFlags(opt.fileFlagsListfile) ?? 1,
+        "dwFileFlags2"   : this.prototype._addFileFlags(opt.fileFlagsAttributes) ?? 1,
+        "dwFileFlags3"   : this.prototype._addFileFlags(opt.fileFlagsSignature) ?? 0,
+        "dwAttrFlags"    : this.prototype._attributeFlags(opt.attributeFlags) ?? 0,
         "dwSectorSize"   : opt.sectorSize ?? 0x1000,
         "dwRawChunkSize" : opt.rawChunkSize ?? 0,
-        "dwMaxFileCount" : opt.maxFiles ?? 4000,
+        "dwMaxFileCount" : opt.maxFiles ?? 1000,
       };
       if (StormLib.SFileCreateArchive2(path, optFilled, handle)) {
         return new MPQ(handle, path);
@@ -534,7 +555,7 @@ class MPQ {
 MPQ.infoClassTypes = [
   "s", "b", "i64", "b", "b", "i64", "i32", "b",
   "i64", "i64", "b", "p", "i64", "i64", "b", "p",
-  "i64", "i64", "i32", "b", "i64", "i64", "i32", "b", 
+  "i64", "i64", "i32", "b", "i64", "i64", "i32", "b",
   "i64", "i64", "b", "i32", "i64", "i32", "b", "i64",
   "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32",
   // end here (the rest are for files)

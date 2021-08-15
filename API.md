@@ -68,11 +68,13 @@ Creates an empty MPQ archive in the virtual file system.
   - fileFlagsListfile: number; file flags for (listfile). Set to 0 to not have a (listfile).
   - fileFlagsAttributes: number; file flags for (attributes). Set to 0 to not have an (attributes).
   - fileFlagsSignature: number; file flags for (signature). Value of 0x80000000 will sign the archive with weak signature.
-  - attributeFlags: number; sum of these bits
-    - 0x1: (attributes) contains CRC32 for each file
-    - 0x2: (attributes) contains file time for each file
-    - 0x4: (attributes) contains MD5 for each file
-    - 0x8: (attributes) contains a patch bit for each file
+  - attributeFlags: can be one of these types
+    - number: raw uint32 flags for StormLib
+    - object: an object containing the following flags
+      - crc32: boolean; (attributes) contains CRC32 for each file
+      - time: boolean; (attributes) contains file time for each file
+      - md5: boolean; (attributes) contains MD5 for each file
+      - patchBit: boolean; (attributes) contains a patch bit for each file
   - sectorSize: number; sector size for the compressed files, must be a power of two.
   - rawChunkSize: number; size of a raw chunk, only used by MPQ version 4.
   - maxFiles: number; max number of files (hash table size). must be between 4 and 524288.
@@ -112,6 +114,8 @@ Reads a file in the MPQ archive.
 
 Patches the MPQ with another MPQ file.
 
+- returns: the MPQ instance itself
+
 - mpqPath: string; path of the pach file in virtual file system
 
 #### mpq.isPatched()
@@ -135,7 +139,7 @@ Searches for a list of files in the MPQ from a given mask.
   - compSize: number; compressed file size
   - fileTimeLo: number; low 32 bits of file time
   - fileTimeHi: number; high 32 bits of file time
-  - locale: number; locale ID
+  - locale: string; locale ID
 
 #### mpq.addFile( fileNameInFS, [ fileNameInMpq, flags ] )
 
@@ -143,7 +147,7 @@ Add a file from the virtual file system to the MPQ archive.
 
 - fileNameInFS: string; path to file in virtual file system.
 - fileNameInMpq: string; optional; path to file to be added in MPQ archive. If omitted, it will use the same path as fileNameInFS.
-- flags: object; optional; if omitted, it will be set to `{"replace": true, "compress": true}`.
+- flags: object; optional; if omitted, it will be set to `{"replace": true, "compress": true, "encrypt": true}`.
   - implode: boolean; an obsolete compression method
   - compress: boolean; file is compressed
   - compression: can be one of these types
@@ -151,7 +155,6 @@ Add a file from the virtual file system to the MPQ archive.
     - string: compression method; one of `["huffman", "zlib", "pkware", "bzip2", "lzma", "sparse", "adpcmMono", "adpcmStereo"]`.
     - array of strings: combinations of the compression methods above
     - this will set the compress flag to true
-    - if you are not familiar with compression types, go with either zlib or lzma
     - for more information, see http://zezula.net/en/mpq/stormlib/sfileaddfileex.html
   - compressionHeader: same type as compression; if specified, will use a different compression method on header of the file
   - encrypt: boolean; file is encrypted
@@ -278,16 +281,16 @@ Gets information about a file in the MPQ archive.
   - fileTime: returns [ low32bit, high32bit ]; file time
   - fileSize: returns number; uncompressed size of file
   - compressedSize: returns number; compressed size of file
-  - flags: returns number; can have the following bits
-    - 0x00000100: implode compression method
-    - 0x00000200: file is compressed
-    - 0x00010000: file is encrypted
-    - 0x00020000: encryption key is fixed according to position of the file in MPQ archive
-    - 0x01000000: single unit
-    - 0x02000000: delete marker
-    - 0x04000000: sector CRC present
+  - flags: returns object; can have the following boolean flags
+    - implode: implode compression method (obsolete)
+    - compress: file is compressed
+    - encrypt: file is encrypted
+    - fixKey: encryption key is fixed according to position of the file in MPQ archive
+    - singleUnit: single unit
+    - deleted: delete marker
+    - sectorCRC: sector CRC present
     - 0x10000000: is standard.snp/(signature)
-    - 0x80000000: file exists
+    - exists: file exists
   - encryptionKey: returns number; encryption key of the file
   - encryptionKeyRaw: returns number; raw, not fixed encryption key of the file
   - crc32: returns number; file crc32 checksum

@@ -135,6 +135,24 @@ class File {
     else if(infoType == "lc") {
       return LCIDToJS(new Uint32Array(bufAB.buffer)[0]);
     }
+    else if(infoType == "f") {
+      let rawInfoReturns = new Uint32Array(bufAB.buffer)[0];
+      let obj = {};
+      if(classC == 53) {
+        obj = {
+          "implode" :     !!(rawInfoReturns & 0x00000100 != 0),
+          "compress" :    !!(rawInfoReturns & 0x00000200 != 0),
+          "encrypt" :     !!(rawInfoReturns & 0x00010000 != 0),
+          "fixKey" :      !!(rawInfoReturns & 0x00020000 != 0),
+          "singleUnit" :  !!(rawInfoReturns & 0x01000000 != 0),
+          "deleted" :     !!(rawInfoReturns & 0x02000000 != 0),
+          "sectorCRC" :   !!(rawInfoReturns & 0x04000000 != 0),
+          "0x10000000" :  !!(rawInfoReturns & 0x10000000 != 0),
+          "exists" :      !!(rawInfoReturns & 0x80000000 != 0)
+        };
+      }
+      return obj;
+    }
     else {
       return bufAB;
     }
@@ -147,7 +165,7 @@ class File {
     let buf = new StormLib.Buf(size);
     let lenNeeded = new StormLib.Uint32Ptr();
     let infoClassC = typeof(infoClass) == "number" ? infoClass : infoClasses[infoClass];
-    
+
     if(StormLib.SFileGetFileInfo(this.handle, infoClassC, buf, size, lenNeeded)) {
       let lenReturned = lenNeeded.toJS();
       lenNeeded.delete();
@@ -200,12 +218,12 @@ File.infoClasses = {
 File.infoClassTypes = [
   "s", "b", "i64", "b", "b", "i64", "i32", "b",
   "i64", "i64", "b", "p", "i64", "i64", "b", "p",
-  "i64", "i64", "i32", "b", "i64", "i64", "i32", "b", 
+  "i64", "i64", "i32", "b", "i64", "i64", "i32", "b",
   "i64", "i64", "b", "i32", "i64", "i32", "b", "i64",
-  "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32", 
+  "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32",
   // start here (40)
   "b", "b", "b", "i32", "i32", "i32", "i64", "lc",
-  "i32", "i64", "i64", "i32", "i32", "i32", "i32", "i32",
+  "i32", "i64", "i64", "i32", "i32", "f", "i32", "i32",
   "i32",
 ];
 

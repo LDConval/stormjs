@@ -191,7 +191,7 @@ describe('MPQ', () => {
         compSize: 21,
         fileTimeLo: 414638976,
         fileTimeHi: 30643794,
-        locale: 0
+        locale: "Neutral"
       });
 
       mpq.close();
@@ -233,7 +233,7 @@ describe('MPQ', () => {
 
   describe('Write / Extra', () => {
     test('create new mpqs', async () => {
-      
+
       const mpq1 = await MPQ.create('/tests/createDefault.mpq');
       mpq1.close();
       const mpq2 = await MPQ.create('/tests/createV3.mpq', 0x2700000, 0x1000);
@@ -246,11 +246,38 @@ describe('MPQ', () => {
         maxFiles : 300
       });
       mpq4.close();
+      const mpq5 = await MPQ.create('/tests/createObjParams2.mpq', {
+        version : 2,
+        attributeFlags : 1,
+        fileFlagsAttributes : 0x80010200,
+      });
+      mpq5.close();
+      const mpq6 = await MPQ.create('/tests/createObjParams3.mpq', {
+        version : 2,
+        attributeFlags : {
+          "crc32" : true,
+          "time" : true,
+          "md5" : true,
+          "patchBit" : true,
+        },
+        fileFlagsAttributes : {
+          "compress" : true,
+          "compression" : ["bzip2", "zlib"],
+          "encrypt" : true,
+          "fixKey" : true,
+        },
+        fileFlagsListfile : {
+          "compress" : false,
+        },
+      });
+      mpq6.close();
 
       expect(mpq1).toBeInstanceOf(MPQ);
       expect(mpq2).toBeInstanceOf(MPQ);
       expect(mpq3).toBeInstanceOf(MPQ);
       expect(mpq4).toBeInstanceOf(MPQ);
+      expect(mpq5).toBeInstanceOf(MPQ);
+      expect(mpq6).toBeInstanceOf(MPQ);
     });
 
     test('create new mpqs with bad options', async () => {
@@ -338,7 +365,7 @@ describe('MPQ', () => {
          })
          .locale("Neutral")
          .addFile("/tests/fixture-002.xml", "fixt005.xml", 0x200, 0x12, 0x12);
-      
+
       expect(mpq.readFile("fixt001.txt")).toHaveLength(13);
       expect(mpq.readFile("fixt002.txt")).toHaveLength(13);
       expect(mpq.readFile("fixt003.txt")).toHaveLength(13);
@@ -582,7 +609,7 @@ describe('MPQ', () => {
 
       let _SFileSFileVerifyArchive = StormLib.SFileVerifyArchive;
       let _SFileVerifyFile = StormLib.SFileVerifyFile;
-      
+
       // Test for different possible outputs for verify()
       // and verifyFile() here. These are unobtainable using
       // normal MPQ operations i.e. without knowing the format
