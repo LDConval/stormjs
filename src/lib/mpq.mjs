@@ -1,6 +1,6 @@
 import File from './file/index.mjs';
 import StormLib from './stormlib.js';
-import {LCIDToC, LCIDToJS} from './lcid/index.mjs';
+import { LCIDToC, LCIDToJS } from './lcid/index.mjs';
 
 class MPQ {
   constructor(handle, fp = "") {
@@ -57,8 +57,7 @@ class MPQ {
     if (!StormLib.SFileOpenPatchArchive(this.handle, path, prefix, 0)) {
       const errno = StormLib.GetLastError();
       throw new Error(`Patch failed (error ${errno})`);
-    }
-    else {
+    } else {
       return this;
     }
   }
@@ -102,10 +101,9 @@ class MPQ {
   compact(listfile = "") {
     this._ensureHandle();
 
-    if(StormLib.SFileCompactArchive(this.handle, listfile, 0)) {
+    if (StormLib.SFileCompactArchive(this.handle, listfile, 0)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to compact archive (error ${errno})`);
     }
@@ -114,10 +112,9 @@ class MPQ {
   addListfile(listfile) {
     this._ensureHandle();
 
-    if(StormLib.SFileAddListFile(this.handle, listfile)) {
+    if (StormLib.SFileAddListFile(this.handle, listfile)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to add listfile (error ${errno})`);
     }
@@ -127,10 +124,9 @@ class MPQ {
     this._ensureHandle();
 
     // "Currently, only SIGNATURE_TYPE_WEAK is supported." from StormLib docs
-    if(StormLib.SFileSignArchive(this.handle, 0x1)) {
+    if (StormLib.SFileSignArchive(this.handle, 0x1)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to add signature (error ${errno})`);
     }
@@ -138,10 +134,9 @@ class MPQ {
 
   flush() {
     this._ensureHandle();
-    if(StormLib.SFileFlushArchive(this.handle)) {
+    if (StormLib.SFileFlushArchive(this.handle)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to flush archive (error ${errno})`);
     }
@@ -149,13 +144,12 @@ class MPQ {
 
   setMaxFiles(maxCount) {
     this._ensureHandle();
-    if(maxCount < StormLib.HASH_TABLE_SIZE_MIN || maxCount > StormLib.HASH_TABLE_SIZE_MAX) {
+    if (maxCount < StormLib.HASH_TABLE_SIZE_MIN || maxCount > StormLib.HASH_TABLE_SIZE_MAX) {
       throw new Error(`Max file count must be in range ${StormLib.HASH_TABLE_SIZE_MIN} - ${StormLib.HASH_TABLE_SIZE_MAX}`);
     }
-    if(StormLib.SFileSetMaxFileCount(this.handle, maxCount)) {
+    if (StormLib.SFileSetMaxFileCount(this.handle, maxCount)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to set max file count (error ${errno})`);
     }
@@ -175,10 +169,9 @@ class MPQ {
 
   removeFile(fileName) {
     this._ensureHandle();
-    if(StormLib.SFileRemoveFile(this.handle, fileName, 0)) {
+    if (StormLib.SFileRemoveFile(this.handle, fileName, 0)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to remove file (error ${errno})`);
     }
@@ -186,10 +179,9 @@ class MPQ {
 
   extractFile(fileNameInMpq, fileNameInFS) {
     this._ensureHandle();
-    if(StormLib.SFileExtractFile(this.handle, fileNameInMpq, fileNameInFS, 0)) {
+    if (StormLib.SFileExtractFile(this.handle, fileNameInMpq, fileNameInFS, 0)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to extract file (error ${errno})`);
     }
@@ -198,11 +190,10 @@ class MPQ {
   verify() {
     this._ensureHandle();
     let retCode = StormLib.SFileVerifyArchive(this.handle);
-    if(retCode % 2 == 0) {
+    if (retCode % 2 == 0) {
       // if there is no signature, verification always passes.
       return this;
-    }
-    else {
+    } else {
       throw new Error(`Verification failed with status ${retCode}`);
     }
   }
@@ -213,13 +204,11 @@ class MPQ {
   }
 
   _verifyFileFlags(arg) {
-    if(typeof(arg) == 'number') {
+    if (typeof(arg) === 'number') {
       return arg;
-    }
-    else if(typeof(arg) == 'undefined') {
+    } else if (typeof(arg) === 'undefined') {
       return 0xF;
-    }
-    else {
+    } else {
       return (arg.sectorCRC ? 0x1 : 0)
            | (arg.fileCRC ? 0x2 : 0)
            | (arg.fileMD5 ? 0x4 : 0)
@@ -230,10 +219,9 @@ class MPQ {
   verifyFile(fileName, flags) {
     this._ensureHandle();
     let retCode = StormLib.SFileVerifyFile(this.handle, fileName, this._verifyFileFlags(flags));
-    if((retCode & 0x2AB) == 0) {
+    if ((retCode & 0x2AB) == 0) {
       return this;
-    }
-    else {
+    } else {
       throw new Error(`File verification failed with status ${retCode}`);
     }
   }
@@ -244,13 +232,11 @@ class MPQ {
   }
 
   _addFileFlags(arg) {
-    if(typeof(arg) == 'number') {
+    if (typeof(arg) === 'number') {
       return arg;
-    }
-    else if(typeof(arg) == 'undefined') {
+    } else if (typeof(arg) === 'undefined') {
       return 0x80010200;
-    }
-    else {
+    } else {
       return ((arg.implode     ? 0x00000100 : 0)
             | (arg.compress    ? 0x00000200 : 0)
             | (arg.compression ? 0x00000200 : 0)
@@ -264,13 +250,11 @@ class MPQ {
   }
 
   _attributeFlags(arg) {
-    if(typeof(arg) == 'number') {
+    if (typeof(arg) === 'number') {
       return arg;
-    }
-    else if(typeof(arg) == 'undefined') {
+    } else if (typeof(arg) === 'undefined') {
       return 0;
-    }
-    else {
+    } else {
       return (arg.crc32    ? 0x1 : 0)
            | (arg.time     ? 0x2 : 0)
            | (arg.md5      ? 0x4 : 0)
@@ -289,22 +273,19 @@ class MPQ {
       "adpcmMono"   : 0x40,
       "adpcmStereo" : 0x80,
     };
-    if(typeof(arg) == 'number') {
+    if (typeof(arg) === 'number') {
       return arg;
-    }
-    else if(typeof(arg) == 'undefined') {
+    } else if (typeof(arg) === 'undefined') {
       return 0x8;
-    }
-    else if(arg.length && arg.map && arg.reduce) {
+    } else if (arg.length && arg.map && arg.reduce) {
       return arg.map(n => {
-        if(!compressionTypes[n]) {
+        if (!compressionTypes[n]) {
           throw new Error(`unrecognized compression type: ${n}`);
         }
         return compressionTypes[n];
-      }).reduce((s,a) => s|a, 0);
-    }
-    else {
-      if(!compressionTypes[arg]) {
+      }).reduce((s,a) => s | a, 0);
+    } else {
+      if (!compressionTypes[arg]) {
         throw new Error(`unrecognized compression type: ${arg}`);
       }
       return compressionTypes[arg];
@@ -313,7 +294,7 @@ class MPQ {
 
   addFile(fileNameInFS, fileNameInMpq, flags, compress, compressNext) {
     this._ensureHandle();
-    if(typeof(fileNameInMpq) != "string") {
+    if (typeof(fileNameInMpq) !== "string") {
       flags = fileNameInMpq;
       fileNameInMpq = fileNameInFS;
       compress = undefined;
@@ -322,10 +303,9 @@ class MPQ {
     let compHead = compress ?? this._compression(flags && (flags.compressionHeader ?? flags.compression));
     let compNext = compressNext ?? compress ?? this._compression(flags && flags.compression);
     let addFileFlags = this._addFileFlags(flags);
-    if(StormLib.SFileAddFileEx(this.handle, fileNameInFS, fileNameInMpq, addFileFlags, compHead, compNext)) {
+    if (StormLib.SFileAddFileEx(this.handle, fileNameInFS, fileNameInMpq, addFileFlags, compHead, compNext)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to add file (error ${errno})`);
     }
@@ -340,10 +320,9 @@ class MPQ {
 
   renameFile(fileName, newName) {
     this._ensureHandle();
-    if(StormLib.SFileRenameFile(this.handle, fileName, newName)) {
+    if (StormLib.SFileRenameFile(this.handle, fileName, newName)) {
       return this;
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
       throw new Error(`Failed to rename file (error ${errno})`);
     }
@@ -353,17 +332,14 @@ class MPQ {
     const infoClassTypes = MPQ.infoClassTypes;
     const infoType = infoClassTypes[classC];
     let bufAB = buf.toJS().slice(0, len);
-    if(infoType == "i64") {
+    if (infoType == "i64") {
       return Array.from(new Uint32Array(bufAB.buffer));
-    }
-    else if(infoType == "i32" || infoType == "p") {
+    } else if (infoType == "i32" || infoType == "p") {
       return new Uint32Array(bufAB.buffer)[0];
-    }
-    else if(infoType == "s") {
+    } else if (infoType == "s") {
       let td = new TextDecoder();
       return td.decode(bufAB).replace(/\x00$/, "");
-    }
-    else {
+    } else {
       return bufAB;
     }
   }
@@ -374,19 +350,20 @@ class MPQ {
     const size = bufSize || 12;
     let buf = new StormLib.Buf(size);
     let lenNeeded = new StormLib.Uint32Ptr();
-    let infoClassC = typeof(infoClass) == "number" ? infoClass : infoClasses[infoClass];
+    let infoClassC = typeof(infoClass) === "number" ? infoClass : infoClasses[infoClass];
 
-    if(StormLib.SFileGetFileInfo(this.handle, infoClassC, buf, size, lenNeeded)) {
+    if (StormLib.SFileGetFileInfo(this.handle, infoClassC, buf, size, lenNeeded)) {
       let lenReturned = lenNeeded.toJS();
       lenNeeded.delete();
       return this._processInfoBuf(buf, lenReturned, infoClassC);
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
-      if(errno != StormLib.ERROR_INSUFFICIENT_BUFFER || bufSize > 0) {
+      if (errno != StormLib.ERROR_INSUFFICIENT_BUFFER || bufSize > 0) {
+        buf.delete();
+        lenNeeded.delete();
         throw new Error(`Failed to get archive info (error ${errno})`);
-      }
-      else {
+      } else {
+        buf.delete();
         let lenNextCall = lenNeeded.toJS();
         lenNeeded.delete();
         return this._getInfo(infoClass, lenNextCall + 4);
@@ -406,15 +383,14 @@ class MPQ {
     // fetched / read arraybuffer from files, directly points at the file
     // section in the Emscripten buffer. It is necessary to copy the
     // buffer or the pointer data may get garbage collected by Emscripten
-    // and consequentally corrupts the data.
+    // which consequentially corrupts the data.
     let buf = fileHandle.read().slice(0);
     fileHandle.close();
 
-    if(typeof(encoding) == "string") {
+    if (typeof(encoding) === "string") {
       let td = new TextDecoder(encoding);
       return td.decode(buf);
-    }
-    else {
+    } else {
       return buf;
     }
   }
@@ -428,7 +404,7 @@ class MPQ {
   }
 
   locale(lcid) {
-    if(typeof(lcid) == "undefined") {
+    if (typeof(lcid) === "undefined") {
       return MPQ.locale(lcid);
     }
     MPQ.locale(lcid);
@@ -442,10 +418,9 @@ class MPQ {
   }
 
   static locale(lcid) {
-    if(typeof(lcid) == "undefined") {
+    if (typeof(lcid) === "undefined") {
       return LCIDToJS(StormLib.SFileGetLocale());
-    }
-    else {
+    } else {
       let lcidConv = LCIDToC(lcid);
       StormLib.SFileSetLocale(lcidConv);
       return LCIDToJS(lcidConv);
@@ -454,8 +429,8 @@ class MPQ {
 
   static async fromArrayBuffer(ab, mpqName = `mpq_${new Date().valueOf()}.mpq`, mode) {
     await StormLib.ready;
-    if(typeof(mpqName) == 'object') {
-      if(typeof(mode) != 'undefined') {
+    if (typeof(mpqName) === 'object') {
+      if (typeof(mode) !== 'undefined') {
         throw new Error('Invalid parameter combination for MPQ.fromArrayBuffer');
       }
       mode = mpqName;
@@ -471,10 +446,9 @@ class MPQ {
 
     let flags = 0;
 
-    if(typeof(mode) == "number") {
+    if (typeof(mode) === "number") {
       flags = mode;
-    }
-    else if(typeof(mode) == "object") {
+    } else if (typeof(mode) === "object") {
       flags = (mode.readOnly       ? 0x100 : 0)
             | (mode.partial        ? 0x10 : 0)
             | (mode.mpqe           ? 0x20 : 0)
@@ -485,8 +459,7 @@ class MPQ {
             | (mode.noHeaderSearch ? 0x40000 : 0)
             | (mode.forceMpqV1     ? 0x80000 : 0)
             | (mode.checkSectorCRC ? 0x100000 : 0);
-    }
-    else if (mode === 'r') {
+    } else if (mode === 'r') {
       flags |= StormLib.STREAM_FLAG_READ_ONLY;
     }
 
@@ -506,8 +479,8 @@ class MPQ {
 
     const handle = new StormLib.VoidPtr();
 
-    if(typeof(createOptionsOrFlags) == 'number') {
-      if(maxFiles < StormLib.HASH_TABLE_SIZE_MIN || maxFiles > StormLib.HASH_TABLE_SIZE_MAX) {
+    if (typeof(createOptionsOrFlags) === 'number') {
+      if (maxFiles < StormLib.HASH_TABLE_SIZE_MIN || maxFiles > StormLib.HASH_TABLE_SIZE_MAX) {
         throw new Error(`Max file count must be in range ${StormLib.HASH_TABLE_SIZE_MIN} - ${StormLib.HASH_TABLE_SIZE_MAX}`);
       }
       if (StormLib.SFileCreateArchive(path, createOptionsOrFlags, maxFiles, handle)) {
@@ -516,17 +489,16 @@ class MPQ {
         const errno = StormLib.GetLastError();
         throw new Error(`Archive could not be created (error ${errno})`);
       }
-    }
-    else if(typeof(createOptionsOrFlags) == 'object') {
+    } else if (typeof(createOptionsOrFlags) === 'object') {
       let opt = createOptionsOrFlags;
       let optFilled = {
         "cbSize"         : opt.headerSize ?? 0,
         "dwMpqVersion"   : (opt.version ?? 1) - 1,
         "dwStreamFlags"  : opt.streamFlags ?? 0,
-        "dwFileFlags1"   : this.prototype._addFileFlags(opt.fileFlagsListfile) ?? 1,
-        "dwFileFlags2"   : this.prototype._addFileFlags(opt.fileFlagsAttributes) ?? 1,
-        "dwFileFlags3"   : this.prototype._addFileFlags(opt.fileFlagsSignature) ?? 0,
-        "dwAttrFlags"    : this.prototype._attributeFlags(opt.attributeFlags) ?? 0,
+        "dwFileFlags1"   : MPQ.prototype._addFileFlags(opt.fileFlagsListfile),
+        "dwFileFlags2"   : MPQ.prototype._addFileFlags(opt.fileFlagsAttributes),
+        "dwFileFlags3"   : MPQ.prototype._addFileFlags(opt.fileFlagsSignature),
+        "dwAttrFlags"    : MPQ.prototype._attributeFlags(opt.attributeFlags),
         "dwSectorSize"   : opt.sectorSize ?? 0x1000,
         "dwRawChunkSize" : opt.rawChunkSize ?? 0,
         "dwMaxFileCount" : opt.maxFiles ?? 1000,
@@ -537,9 +509,19 @@ class MPQ {
         const errno = StormLib.GetLastError();
         throw new Error(`Archive could not be created (error ${errno})`);
       }
-    }
-    else {
-      if (StormLib.SFileCreateArchive(path, 0x100000, 4000, handle)) {
+    } else {
+      if (StormLib.SFileCreateArchive2(path, {
+        "cbSize"         : 0,
+        "dwMpqVersion"   : 0,
+        "dwStreamFlags"  : 0,
+        "dwFileFlags1"   : 0x80010200,
+        "dwFileFlags2"   : 0,
+        "dwFileFlags3"   : 0,
+        "dwAttrFlags"    : 0,
+        "dwSectorSize"   : 0x1000,
+        "dwRawChunkSize" : 0,
+        "dwMaxFileCount" : 1000,
+      }, handle)) {
         return new MPQ(handle, path);
       } else {
         const errno = StormLib.GetLastError();
@@ -557,7 +539,7 @@ MPQ.infoClassTypes = [
   "i32", "i32", "i32", "i32", "i32", "i32", "i32", "i32",
   // end here (the rest are for files)
   "b", "b", "b", "i32", "i32", "i32", "i64", "lc",
-  "i32", "i64", "i64", "i32", "i32", "i32", "i32", "i32",
+  "i32", "i64", "i64", "i32", "i32", "f", "i32", "i32",
   "i32",
 ];
 

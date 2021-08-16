@@ -1,6 +1,6 @@
 import FileStream from './stream.mjs';
 import StormLib from '../stormlib.js';
-import {LCIDToC, LCIDToJS} from '../lcid/index.mjs';
+import { LCIDToC, LCIDToJS } from '../lcid/index.mjs';
 
 class File {
   constructor(handle) {
@@ -126,34 +126,32 @@ class File {
     const infoClassTypes = File.infoClassTypes;
     const infoType = infoClassTypes[classC];
     let bufAB = buf.toJS().slice(0, len);
-    if(infoType == "i64") {
+    if (infoType == "i64") {
       return Array.from(new Uint32Array(bufAB.buffer));
-    }
-    else if(infoType == "i32" || infoType == "p") {
+    } else if (infoType == "i32" || infoType == "p") {
       return new Uint32Array(bufAB.buffer)[0];
-    }
-    else if(infoType == "lc") {
+    } else if (infoType == "lc") {
       return LCIDToJS(new Uint32Array(bufAB.buffer)[0]);
-    }
-    else if(infoType == "f") {
+    } else if (infoType == "f") {
       let rawInfoReturns = new Uint32Array(bufAB.buffer)[0];
       let obj = {};
-      if(classC == 53) {
+      if (classC == 53) {
+        // double exclamation mark to convert number to boolean
         obj = {
-          "implode" :     !!(rawInfoReturns & 0x00000100 != 0),
-          "compress" :    !!(rawInfoReturns & 0x00000200 != 0),
-          "encrypt" :     !!(rawInfoReturns & 0x00010000 != 0),
-          "fixKey" :      !!(rawInfoReturns & 0x00020000 != 0),
-          "singleUnit" :  !!(rawInfoReturns & 0x01000000 != 0),
-          "deleted" :     !!(rawInfoReturns & 0x02000000 != 0),
-          "sectorCRC" :   !!(rawInfoReturns & 0x04000000 != 0),
-          "0x10000000" :  !!(rawInfoReturns & 0x10000000 != 0),
-          "exists" :      !!(rawInfoReturns & 0x80000000 != 0)
+          "implode" :     !!((rawInfoReturns & 0x00000100) !== 0),
+          "compress" :    !!((rawInfoReturns & 0x00000200) !== 0),
+          "encrypt" :     !!((rawInfoReturns & 0x00010000) !== 0),
+          "fixKey" :      !!((rawInfoReturns & 0x00020000) !== 0),
+          "singleUnit" :  !!((rawInfoReturns & 0x01000000) !== 0),
+          "deleted" :     !!((rawInfoReturns & 0x02000000) !== 0),
+          "sectorCRC" :   !!((rawInfoReturns & 0x04000000) !== 0),
+          "0x10000000" :  !!((rawInfoReturns & 0x10000000) !== 0),
+          "exists" :      !!((rawInfoReturns & 0x80000000) !== 0),
+          "rawFlags" :    rawInfoReturns
         };
       }
       return obj;
-    }
-    else {
+    } else {
       return bufAB;
     }
   }
@@ -164,19 +162,17 @@ class File {
     const size = bufSize || 12;
     let buf = new StormLib.Buf(size);
     let lenNeeded = new StormLib.Uint32Ptr();
-    let infoClassC = typeof(infoClass) == "number" ? infoClass : infoClasses[infoClass];
+    let infoClassC = typeof(infoClass) === "number" ? infoClass : infoClasses[infoClass];
 
-    if(StormLib.SFileGetFileInfo(this.handle, infoClassC, buf, size, lenNeeded)) {
+    if (StormLib.SFileGetFileInfo(this.handle, infoClassC, buf, size, lenNeeded)) {
       let lenReturned = lenNeeded.toJS();
       lenNeeded.delete();
       return this._processInfoBuf(buf, lenReturned, infoClassC);
-    }
-    else {
+    } else {
       const errno = StormLib.GetLastError();
-      if(errno != StormLib.ERROR_INSUFFICIENT_BUFFER || bufSize > 0) {
+      if (errno != StormLib.ERROR_INSUFFICIENT_BUFFER || bufSize > 0) {
         throw new Error(`Failed to get file info (error ${errno})`);
-      }
-      else {
+      } else {
         let lenNextCall = lenNeeded.toJS();
         lenNeeded.delete();
         return this._getInfo(infoClass, lenNextCall + 4);

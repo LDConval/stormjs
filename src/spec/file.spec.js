@@ -473,16 +473,17 @@ describe('File', () => {
       expect(file.getInfo("patchChain")).toBeInstanceOf(Uint8Array);
       expect(file.getInfo("fileEntry")).toBeInstanceOf(Uint8Array);
       expect(file.getInfo("flags")).toEqual({
-          "implode" :     false,
-          "compress" :    false,
-          "encrypt" :     false,
-          "fixKey" :      false,
-          "singleUnit" :  false,
-          "deleted" :     false,
-          "sectorCRC" :   false,
-          "0x10000000" :  false,
-          "exists" :      false,
-        });
+        "implode" :     false,
+        "compress" :    true,
+        "encrypt" :     false,
+        "fixKey" :      false,
+        "singleUnit" :  false,
+        "deleted" :     false,
+        "sectorCRC" :   false,
+        "0x10000000" :  false,
+        "exists" :      true,
+        "rawFlags" :    2147484160,
+      });
       expect(() => file.getInfo("userData")).toThrow(Error);
       expect(() => file.getInfo(100)).toThrow(Error);
 

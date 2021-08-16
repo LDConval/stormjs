@@ -1,5 +1,5 @@
 describe('Unnecessary Tests', () => {
-  var _env;
+  let _env;
 
   beforeEach(() => {
     jest.resetModules();
@@ -24,9 +24,33 @@ describe('Unnecessary Tests', () => {
       expect(StormLib.SFileCloseFile).toBeTruthy();
     });
   });
+  describe('File', () => {
+    test('improve test coverage for File', async () => {
+      jest.resetModules();
+      process.env.NODE_ENV = 'debug';
+
+      const path = require('path');
+      const { File, FS, MPQ } = require('../lib');
+      const rootDir = path.resolve(__filename, '../../../');
+
+      FS.mkdir('/fixture');
+      FS.mount(FS.filesystems.NODEFS, { root: `${rootDir}/fixture` }, '/fixture');
+
+      const mpq = await MPQ.open('/fixture/vanilla-standard.mpq');
+      const file = mpq.openFile('fixture.txt');
+  
+      File.infoClassTypes[42] = "f";
+      File.infoClasses["unknownClass"] = 42;
+  
+      expect(file.getInfo("unknownClass")).toEqual({});
+  
+      file.close();
+      mpq.close();
+    });
+  });
   describe('LCID', () => {
-    test('improve test coverage', async () => {
-      let {LCID, LCIDToC, LCIDToJS, invLCID} = require('../lib/lcid/index.mjs');
+    test('improve test coverage for LCID', async () => {
+      let { LCID, LCIDToC, LCIDToJS, invLCID } = require('../lib/lcid/index.mjs');
 
       expect(LCID[0x409]).toEqual("en_US");
       expect(invLCID["en_US".toLowerCase()]).toEqual(0x409);

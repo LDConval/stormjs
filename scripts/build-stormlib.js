@@ -162,11 +162,11 @@ async function buildDebug(buildRoot, distDir) {
 
   console.info('Fixing return statement');
 
-  let fileData = fs.readFileSync(`${distDir}/stormlib.debug.js`, {encoding: "utf8"});
+  let fileData = fs.readFileSync(`${distDir}/stormlib.debug.js`, { encoding: "utf8" });
 
   fileData = fileData.replace("  return StormLib.ready", "  return StormLib;");
 
-  fs.writeFileSync(`${distDir}/stormlib.debug.js`, fileData, {encoding: "utf8"});
+  fs.writeFileSync(`${distDir}/stormlib.debug.js`, fileData, { encoding: "utf8" });
 }
 
 async function buildRelease(buildRoot, distDir) {
@@ -240,11 +240,11 @@ async function buildRelease(buildRoot, distDir) {
 
   console.info('Fixing return statement');
 
-  let fileData = fs.readFileSync(`${distDir}/stormlib.release.js`, {encoding: "utf8"});
+  let fileData = fs.readFileSync(`${distDir}/stormlib.release.js`, { encoding: "utf8" });
 
   fileData = fileData.replace("  return StormLib.ready", "  return StormLib;");
 
-  fs.writeFileSync(`${distDir}/stormlib.release.js`, fileData, {encoding: "utf8"});
+  fs.writeFileSync(`${distDir}/stormlib.release.js`, fileData, { encoding: "utf8" });
 }
 
 async function emcmake(flags = [], path = '.') {

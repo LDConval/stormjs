@@ -271,6 +271,21 @@ describe('MPQ', () => {
         },
       });
       mpq6.close();
+      const mpq7 = await MPQ.create('/tests/createObjParams4.mpq', {
+        version : 4,
+        attributeFlags : {
+          "crc32" : false,
+          "time" : 0,
+          "md5" : null,
+        },
+        fileFlagsAttributes : {
+          "singleUnit" : true,
+        },
+        fileFlagsListfile : {
+          "implode" : true,
+        },
+      });
+      mpq7.close();
 
       expect(mpq1).toBeInstanceOf(MPQ);
       expect(mpq2).toBeInstanceOf(MPQ);
@@ -278,6 +293,7 @@ describe('MPQ', () => {
       expect(mpq4).toBeInstanceOf(MPQ);
       expect(mpq5).toBeInstanceOf(MPQ);
       expect(mpq6).toBeInstanceOf(MPQ);
+      expect(mpq7).toBeInstanceOf(MPQ);
     });
 
     test('create new mpqs with bad options', async () => {
@@ -324,47 +340,47 @@ describe('MPQ', () => {
       const mpq = await MPQ.open('/tests/createDefault.mpq');
 
       mpq.addFile("/tests/fixture-001.txt", "fixt001.txt")
-         .addFile("/tests/fixture-001.txt", "fixt002.txt", 0x80000200, 0x2, 0x8)
-         .addFile("/tests/fixture-001.txt", {
+        .addFile("/tests/fixture-001.txt", "fixt002.txt", 0x80000200, 0x2, 0x8)
+        .addFile("/tests/fixture-001.txt", {
           "compress" : true,
           "encrypt" : true,
           "replace" : false,
-         })
-         .addFile("/tests/fixture-001.txt", "fixt003.txt", {
+        })
+        .addFile("/tests/fixture-001.txt", "fixt003.txt", {
           "compress" : true,
           "compression" : "lzma",
           "sectorCRC" : true,
           "replace" : true,
-         })
-         .locale("en_US")
-         .addFile("/tests/fixture-001.txt", "fixt004.txt", {
+        })
+        .locale("en_US")
+        .addFile("/tests/fixture-001.txt", "fixt004.txt", {
           "compress" : true,
           "compression" : ["bzip2", "zlib"],
-         })
-         .addFile("/tests/fixture-001.txt", "fixt006.txt", {
+        })
+        .addFile("/tests/fixture-001.txt", "fixt006.txt", {
           "compress" : true,
           "compression" : 0x18,
-         })
-         .addFile("/tests/fixture-001.txt", "fixt006.txt", {
+        })
+        .addFile("/tests/fixture-001.txt", "fixt006.txt", {
           "compress" : false,
           "singleUnit" : true,
           "replace" : true
-         })
-         .addFile("/tests/fixture-001.txt", "fixt007.txt", {
+        })
+        .addFile("/tests/fixture-001.txt", "fixt007.txt", {
           "compress" : false,
           "encrypt" : true,
           "fixKey" : true
-         })
-         .addFile("/tests/fixture-001.txt", "fixt008.txt", {
+        })
+        .addFile("/tests/fixture-001.txt", "fixt008.txt", {
           "implode" : true,
-         })
-         .addFile("/tests/fixture-001.txt", "fixt009.txt", {
+        })
+        .addFile("/tests/fixture-001.txt", "fixt009.txt", {
           "deleted" : true,
           "compress" : true,
           "encrypt" : true,
-         })
-         .locale("Neutral")
-         .addFile("/tests/fixture-002.xml", "fixt005.xml", 0x200, 0x12, 0x12);
+        })
+        .locale("Neutral")
+        .addFile("/tests/fixture-002.xml", "fixt005.xml", 0x200, 0x12, 0x12);
 
       expect(mpq.readFile("fixt001.txt")).toHaveLength(13);
       expect(mpq.readFile("fixt002.txt")).toHaveLength(13);
@@ -435,8 +451,8 @@ describe('MPQ', () => {
     test('unicode test', async () => {
       const mpq = await MPQ.create('/tests/\u5444\u6868\ub3b5\u2700.mpq');
       mpq.addFile("/tests/fixture-001.txt", "\u8400\uaaaa\u9999\ubfbf.txt")
-         .extractFile("\u8400\uaaaa\u9999\ubfbf.txt", "/tests/u\u3553\u4755\u8400.txt")
-         .addFile("/tests/u\u3553\u4755\u8400.txt", "duh.txt");
+        .extractFile("\u8400\uaaaa\u9999\ubfbf.txt", "/tests/u\u3553\u4755\u8400.txt")
+        .addFile("/tests/u\u3553\u4755\u8400.txt", "duh.txt");
 
       expect(mpq.readFile("duh.txt")).toHaveLength(13);
       expect(mpq.readFile("\u8400\uaaaa\u9999\ubfbf.txt")).toHaveLength(13);
@@ -449,8 +465,8 @@ describe('MPQ', () => {
       const mpq = await MPQ.open('/tests/createDefault.mpq');
 
       expect(mpq.getInfo("fileName")).toEqual('/tests/createDefault.mpq');
-      expect(mpq.getInfo("hashTableSize")).toEqual(0x1000);
-      expect(mpq.getInfo("hashTableSize64")).toEqual([65536, 0]);
+      expect(mpq.getInfo("hashTableSize")).toEqual(0x400);
+      expect(mpq.getInfo("hashTableSize64")).toEqual([16384, 0]);
       expect(mpq.getInfo("hashTable")).toBeInstanceOf(Uint8Array);
       expect(mpq.locale("en_US").getFileInfo("fixt001.txt", "locale")).toEqual("Neutral");
       expect(mpq.getFileInfo("fixt004.txt", "locale")).toEqual("en_US");
@@ -472,11 +488,11 @@ describe('MPQ', () => {
       expect(mpq.verifyStatus()).toEqual(2);
 
       expect(mpq.verifyFile("fixt001.txt", 1)).toBeTruthy();
-      expect(mpq.verifyFileStatus("fixt001.txt", {"sectorCRC" : true})).toEqual(0);
+      expect(mpq.verifyFileStatus("fixt001.txt", { "sectorCRC" : true })).toEqual(0);
 
       expect(mpq.verifyFile("fixt003.txt")).toBeTruthy();
       expect(mpq.verifyFileStatus("fixt003.txt", 0xF)).toEqual(4);
-      expect(mpq.verifyFileStatus("fixt003.txt", {"sectorCRC" : false})).toEqual(0);
+      expect(mpq.verifyFileStatus("fixt003.txt", { "sectorCRC" : false })).toEqual(0);
       expect(mpq.verifyFileStatus("fixt003.txt", {
         "sectorCRC" : true,
         "fileCRC" : true,
@@ -508,17 +524,17 @@ describe('MPQ', () => {
 
     test('arraybuffer operations', async () => {
       let ab = FS.readFile("/fixture/vanilla-standard.mpq");
-      const mpq1 = await MPQ.fromArrayBuffer(ab, {readOnly: true, name: "abmpq001.mpq", maxFiles: 2150});
+      const mpq1 = await MPQ.fromArrayBuffer(ab, { readOnly: true, name: "abmpq001.mpq", maxFiles: 2150 });
       mpq1.close();
       const mpq2 = await MPQ.fromArrayBuffer(ab.buffer);
       mpq2.close();
 
-      let ab_multi4 = FS.readFile("/fixture/size.mpq");
-      const mpq3 = await MPQ.fromArrayBuffer(new Int32Array(ab_multi4.buffer), {name: "abmpq002.mpq"});
+      let abMulti4 = FS.readFile("/fixture/size.mpq");
+      const mpq3 = await MPQ.fromArrayBuffer(new Int32Array(abMulti4.buffer), { name: "abmpq002.mpq" });
       mpq3.close();
-      const mpq4 = await MPQ.fromArrayBuffer(new Uint32Array(ab_multi4.buffer), {mpqName: "abmpq003.mpq"});
+      const mpq4 = await MPQ.fromArrayBuffer(new Uint32Array(abMulti4.buffer), { mpqName: "abmpq003.mpq" });
       mpq4.close();
-      const mpq5 = await MPQ.fromArrayBuffer(new Uint16Array(ab_multi4.buffer), {readOnly: true});
+      const mpq5 = await MPQ.fromArrayBuffer(new Uint16Array(abMulti4.buffer), { readOnly: true });
       mpq5.close();
 
       expect(mpq1).toBeInstanceOf(MPQ);
@@ -534,7 +550,7 @@ describe('MPQ', () => {
       let abf = new Uint8Array([99, 33, 88, 44, 77, 66, 55]);
       let abf32 = new Int32Array([1986094418, 1495298661, 1768318575, 1634607214, 1818840608, 1953718630]);
       mpq.addFileFromArrayBuffer("addfileab.txt", abf);
-      mpq.addFileFromArrayBuffer("addfileabi32_1.txt", abf32, {fsFileName: "test0.txt"});
+      mpq.addFileFromArrayBuffer("addfileabi32_1.txt", abf32, { fsFileName: "test0.txt" });
       mpq.addFileFromArrayBuffer("addfileabi32_2.txt", abf32.buffer);
       mpq.addFileFromArrayBuffer("addfileabi32_3.txt", new Uint8Array(abf32.buffer));
 
@@ -561,7 +577,7 @@ describe('MPQ', () => {
       expect(mpq.setMaxFiles(4096)).toBeTruthy();
       expect(() => mpq.setMaxFiles(400000000)).toThrow(Error);
 
-      for(let i=0; i<1000; i++) {
+      for (let i = 0; i < 1000; i++) {
         mpq.addFile("/tests/fixture-001.txt", `fixt_${i}.txt`);
       }
       expect(() => mpq.setMaxFiles(256)).toThrow(Error);
