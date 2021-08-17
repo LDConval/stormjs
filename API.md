@@ -65,9 +65,12 @@ Creates an empty MPQ archive in the virtual file system.
 - mode: object; optional; contains the following values
   - version: number; MPQ version, can be one of `[ 1, 2, 3, 4 ]`
   - streamFlags: number
-  - fileFlagsListfile: number; file flags for (listfile). Set to 0 to not have a (listfile).
-  - fileFlagsAttributes: number; file flags for (attributes). Set to 0 to not have an (attributes).
-  - fileFlagsSignature: number; file flags for (signature). Value of 0x80000000 will sign the archive with weak signature.
+  - fileFlagsListfile: number/object; file flags for (listfile). Set to 0 to not have a (listfile).
+  - fileFlagsAttributes: number/object; file flags for (attributes). Set to 0 to not have an (attributes).
+  - fileFlagsSignature: number/object; file flags for (signature). Value of 0x80000000 will sign the archive with weak signature.
+    - File flags can be number or object types.
+    - See the `flags` parameter for `mpq.addFile` for details.
+    - The `compression` flag does not work on internal files.
   - attributeFlags: can be one of these types
     - number: raw uint32 flags for StormLib
     - object: an object containing the following flags
@@ -281,16 +284,17 @@ Gets information about a file in the MPQ archive.
   - fileTime: returns [ low32bit, high32bit ]; file time
   - fileSize: returns number; uncompressed size of file
   - compressedSize: returns number; compressed size of file
-  - flags: returns object; can have the following boolean flags
-    - implode: implode compression method (obsolete)
-    - compress: file is compressed
-    - encrypt: file is encrypted
-    - fixKey: encryption key is fixed according to position of the file in MPQ archive
-    - singleUnit: single unit
-    - deleted: delete marker
-    - sectorCRC: sector CRC present
-    - 0x10000000: is standard.snp/(signature)
-    - exists: file exists
+  - flags: returns object; can have the following properties
+    - implode: boolean; implode compression method (obsolete)
+    - compress: boolean; file is compressed
+    - encrypt: boolean; file is encrypted
+    - fixKey: boolean; encryption key fixed according to position in MPQ archive
+    - singleUnit: boolean; single unit
+    - deleted: boolean; delete marker
+    - sectorCRC: boolean; sector CRC present
+    - 0x10000000: boolean; is standard.snp/(signature)
+    - exists: boolean; file exists
+    - rawFlags: number; raw flags
   - encryptionKey: returns number; encryption key of the file
   - encryptionKeyRaw: returns number; raw, not fixed encryption key of the file
   - crc32: returns number; file crc32 checksum

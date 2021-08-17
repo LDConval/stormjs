@@ -315,7 +315,14 @@ class MPQ {
     let fsFileName = (flags && flags.fsFileName) || `temp_${new Date().valueOf()}.xxx`;
     let uint8ab = new Uint8Array(ab.buffer ?? ab);
     StormLib.FS.writeFile(fsFileName, uint8ab);
-    return this.addFile(fsFileName, fileName, flags);
+    let result;
+    try {
+      result = this.addFile(fsFileName, fileName, flags);
+    }
+    finally {
+      StormLib.FS.unlink(fsFileName);
+    }
+    return result;
   }
 
   renameFile(fileName, newName) {

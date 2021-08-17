@@ -569,6 +569,9 @@ describe('MPQ', () => {
         readOnly: true,
         name: "abnormalmpq.mpq"
       }, 4000)).rejects.toThrow(Error);
+
+      // do not leave temp file in FS
+      expect(() => FS.readFile("test0.txt")).toThrow(Error);
     });
 
     test('set max file count', async () => {
