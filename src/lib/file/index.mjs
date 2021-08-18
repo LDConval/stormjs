@@ -126,6 +126,7 @@ class File {
     const infoClassTypes = File.infoClassTypes;
     const infoType = infoClassTypes[classC];
     let bufAB = buf.toJS().slice(0, len);
+    buf.delete();
     if (infoType == "i64") {
       return Array.from(new Uint32Array(bufAB.buffer));
     } else if (infoType == "i32" || infoType == "p") {
