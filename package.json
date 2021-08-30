@@ -1,6 +1,6 @@
 {
   "name": "@ldcv/stormjs",
-  "version": "0.5.9",
+  "version": "0.5.10",
   "description": "StormLib for Javascript, powered by Emscripten",
   "main": "dist/index",
   "module": "dist/index.mjs",

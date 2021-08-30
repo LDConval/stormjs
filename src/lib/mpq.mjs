@@ -112,11 +112,12 @@ class MPQ {
   addListfile(listfile) {
     this._ensureHandle();
 
-    if (StormLib.SFileAddListFile(this.handle, listfile)) {
+    let retval = StormLib.SFileAddListFile(this.handle, listfile);
+
+    if (retval === 0) {
       return this;
     } else {
-      const errno = StormLib.GetLastError();
-      throw new Error(`Failed to add listfile (error ${errno})`);
+      throw new Error(`Failed to add listfile (error ${retval})`);
     }
   }
 

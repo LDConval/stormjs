@@ -598,8 +598,8 @@ describe('MPQ', () => {
       const mpq = await MPQ.open('/tests/createDefault.mpq');
 
       mpq.extractFile("(listfile)", "/tests/listfile.txt");
-      expect(mpq.addListfile("(listfile)")).toBeTruthy();
-      expect(() => mpq.addListfile("/tests/fixture-001.txt")).toThrow(Error);
+      expect(mpq.addListfile("/tests/listfile.txt")).toBeTruthy();
+      expect(() => mpq.addListfile("(listfile)")).toThrow(Error);
 
       mpq.close();
     });
